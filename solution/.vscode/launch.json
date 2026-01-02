@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Plot Samples of Faces Datasets",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/plot_samples_of_faces_datasets.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Train SimpleNet on Fakes Dataset",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/train_main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d", "fakes_dataset",
+                "-m", "SimpleNet",
+                "--lr", "0.001",
+                "-b", "32",
+                "-e", "5",
+                "-o", "Adam"
+            ],
+            "justMyCode": true
+        }
+    ]
+}

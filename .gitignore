@@ -211,3 +211,6 @@ __marimo__/
 
 # Dataset
 Assignment4_datasets/*
+
+# Figures
+solution/figures/*
