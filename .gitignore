@@ -208,3 +208,6 @@ __marimo__/
 
 # VSCode
 .idea
+
+# Dataset
+Assignment4_datasets/*
