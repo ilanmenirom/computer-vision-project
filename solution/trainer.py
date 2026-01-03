@@ -66,13 +66,11 @@ class Trainer:
             loss = self.criterion(output, targets)
             loss.backward()
             self.optimizer.step()
-            
+            # Predict and update statistics
             total_loss += loss.item()
             nof_samples += targets.size(0)
-            _, predicted = output.max(1)
-            correct_labeled_samples += (predicted == targets).sum().item()
-            avg_loss = total_loss / (batch_idx + 1)
-            accuracy = 100.0 * correct_labeled_samples / nof_samples
+            correct_labeled_samples, accuracy, avg_loss = self._update_stats(
+                output, targets, correct_labeled_samples, nof_samples, total_loss)
 
             if batch_idx % print_every == 0 or \
                     batch_idx == len(train_dataloader) - 1:
@@ -105,7 +103,16 @@ class Trainer:
         print_every = max(int(len(dataloader) / 10), 1)
 
         for batch_idx, (inputs, targets) in enumerate(dataloader):
-            """INSERT YOUR CODE HERE."""
+            with torch.inference_mode():  # avoid gradients calculation
+                inputs, targets = inputs.to(device), targets.to(device)
+                output = self.model(inputs)
+                loss = self.criterion(output, targets)
+                # Predict and update statistics
+                total_loss += loss.item()
+                nof_samples += targets.size(0)
+                correct_labeled_samples, accuracy, avg_loss = self._update_stats(
+                    output, targets, correct_labeled_samples, nof_samples, total_loss)
+
             if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
                 print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
                       f'Acc: {accuracy:.2f}[%] '
@@ -199,3 +206,31 @@ class Trainer:
                 torch.save(state, checkpoint_filename)
                 best_acc = val_acc
         self.write_output(logging_parameters, output_data)
+
+    def _update_stats(
+            self,
+            output: torch.Tensor,
+            targets: torch.Tensor,
+            correct_labeled_samples: int,
+            nof_samples: int,
+            total_loss: float) -> tuple[int, float, float]:
+        """Update statistics after each batch.
+
+        Args:
+            output: model output for the current batch.
+            targets: ground truth labels for the current batch.
+            correct_labeled_samples: number of correctly labeled samples
+                so far.
+            nof_samples: number of samples processed so far.
+            total_loss: total loss accumulated so far.
+
+        Returns:
+            correct_labeled_samples: updated number of correctly labeled samples.
+            accuracy: updated accuracy in % units.
+            avg_loss: updated average loss in normalized units (between 0 and 1).
+        """
+        _, predicted = output.max(1)
+        correct_labeled_samples += (predicted == targets).sum().item()
+        avg_loss = total_loss / (nof_samples / targets.size(0))
+        accuracy = 100.0 * correct_labeled_samples / nof_samples
+        return correct_labeled_samples, accuracy, avg_loss
