@@ -60,7 +60,20 @@ class Trainer:
         print_every = int(len(train_dataloader) / 10)
 
         for batch_idx, (inputs, targets) in enumerate(train_dataloader):
-            """INSERT YOUR CODE HERE."""
+            self.model.zero_grad()
+            inputs, targets = inputs.to(device), targets.to(device) 
+            output = self.model(inputs)
+            loss = self.criterion(output, targets)
+            loss.backward()
+            self.optimizer.step()
+            
+            total_loss += loss.item()
+            nof_samples += targets.size(0)
+            _, predicted = output.max(1)
+            correct_labeled_samples += (predicted == targets).sum().item()
+            avg_loss = total_loss / (batch_idx + 1)
+            accuracy = 100.0 * correct_labeled_samples / nof_samples
+
             if batch_idx % print_every == 0 or \
                     batch_idx == len(train_dataloader) - 1:
                 print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
