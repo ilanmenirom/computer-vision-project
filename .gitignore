@@ -209,8 +209,7 @@ __marimo__/
 # VSCode
 .idea
 
-# Dataset
+# Internal Folders
 Assignment4_datasets/*
-
-# Figures
 solution/figures/*
+solution/checkpoints/*
